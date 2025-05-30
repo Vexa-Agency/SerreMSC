@@ -1,1 +1,37 @@
+#include <DS3231.h>
+#include <LiquidCrystal.h>
 
+// Initialisation du module RTC et de l'écran LCD
+DS3231 rtc(SDA, SCL);
+LiquidCrystal lcd(1, 2, 4, 5, 6, 7);
+
+// Définition de la broche qui contrôle la lumière (ex : D8)
+const int pinLumiere = 8;
+
+void setup() {
+  rtc.begin(); // Démarre l'horloge temps réel
+  lcd.begin(16, 2); // Initialise l'écran LCD
+  pinMode(pinLumiere, OUTPUT); // Définit la broche de lumière comme sortie
+}
+
+void loop() {
+  Time t = rtc.getTime(); // Récupère l'heure actuelle
+
+  // Affichage de l'heure sur l'écran LCD
+  lcd.setCursor(0, 0);
+  lcd.print("Time: ");
+  lcd.print(rtc.getTimeStr());
+
+  lcd.setCursor(0, 1);
+  lcd.print("Date: ");
+  lcd.print(rtc.getDateStr());
+
+  // Gestion de la lumière
+  if (t.hour >= 6 && t.hour < 18) {
+    digitalWrite(pinLumiere, HIGH); // Allume la lumière
+  } else {
+    digitalWrite(pinLumiere, LOW);  // Éteint la lumière
+  }
+
+  delay(1000); // Pause de 1 seconde
+}
