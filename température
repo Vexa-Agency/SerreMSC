@@ -1,1 +1,39 @@
+#include <OneWire.h>
+OneWire ds(2); // Déclarez un objet OneWire lié à la broche 2
 
+void setup() {
+Serial.begin(9600); // Initialisez la communication série à une vitesse de 9600 bauds
+}
+
+void loop () {
+byte data[12]; // Tableau de données pour stocker les données du capteur
+byte addr[8]; // Tableau d'adresses pour stocker l'adresse unique du capteur
+if ( !ds.search(addr)) {
+    Serial.println("Pas de capteur trouvé");
+ds.reset_search();
+delay(250);
+return;
+}
+if ( OneWire::crc8( addr, 7) != addr[7]) {
+Serial.println("CRC incorrect");
+return;
+}
+ds.reset();
+ds.select(addr);
+ds.write(0x44, 1); // Lancez une conversion de température
+delay(1000); // Attendez la fin de la conversion
+byte present = ds.reset();
+ds.select(addr);
+ds.write(0xBE); // Demandez les données de température
+for (int i = 0; i < 9; i++) { // Boucle pour lire les données
+data[i] = ds.read();
+}
+ds.reset_search();
+byte MSB = data[1];
+byte LSB = data[0];
+float tempRead = ((MSB << 8) | LSB); // Concaténez les octets pour obtenir la température
+float TemperatureSum = tempRead / 16;
+Serial.print("Température : ");
+Serial.print(TemperatureSum);
+Serial.println("°C");
+}
